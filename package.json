@@ -1,6 +1,6 @@
 {
   "name": "@myrotvorets/express-microservice-middlewares",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Middlewares internally used by our microservices",
   "main": "dist/index.js",
   "scripts": {
@@ -41,7 +41,6 @@
   },
   "dependencies": {},
   "peerDependencies": {
-    "@types/multer": "^1.4.3",
     "express": "^4.0.0",
     "express-openapi-validator": "^3.0.0"
   }
