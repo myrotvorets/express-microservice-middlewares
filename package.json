@@ -1,6 +1,6 @@
 {
   "name": "@myrotvorets/express-microservice-middlewares",
-  "version": "1.0.1",
+  "version": "1.1.1",
   "description": "Middlewares internally used by our microservices",
   "main": "dist/index.js",
   "scripts": {
@@ -26,7 +26,7 @@
     "@types/supertest": "^2.0.10",
     "@typescript-eslint/eslint-plugin": "^3.5.0",
     "@typescript-eslint/parser": "^3.5.0",
-    "eslint": "^7.2.0",
+    "eslint": "^7.4.0",
     "eslint-config-prettier": "^6.11.0",
     "eslint-plugin-prettier": "^3.1.3",
     "express": "^4.17.1",
@@ -43,5 +43,13 @@
   "peerDependencies": {
     "express": "^4.0.0",
     "express-openapi-validator": "^3.0.0"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/myrotvorets/express-microservice-middlewares.git"
+  },
+  "bugs": {
+    "url": "https://github.com/myrotvorets/express-microservice-middlewares/issues"
+  },
+  "homepage": "https://github.com/myrotvorets/express-microservice-middlewares#readme"
 }
