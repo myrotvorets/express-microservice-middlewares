@@ -1,7 +1,7 @@
 import request from 'supertest';
-import express, { Request, RequestHandler, Response, NextFunction } from 'express';
-import { errorMiddleware, ErrorResponse } from '..';
+import express, { NextFunction, Request, RequestHandler, Response } from 'express';
 import { HttpError } from 'express-openapi-validator/dist/framework/types';
+import { ErrorResponse, errorMiddleware } from '..';
 
 function buildServer(fn: RequestHandler): express.Application {
     const server = express();
@@ -37,8 +37,8 @@ describe('errorMiddleware', (): void => {
             return request(server)
                 .get('/')
                 .expect(500)
-                .expect(/<!DOCTYPE html/)
-                .expect(/<title>Error<\/title>/);
+                .expect(/<!DOCTYPE html/u)
+                .expect(/<title>Error<\/title>/u);
         },
     );
 
@@ -49,8 +49,8 @@ describe('errorMiddleware', (): void => {
             return request(server)
                 .get('/')
                 .expect(404)
-                .expect(/<!DOCTYPE html/)
-                .expect(/<title>Error<\/title>/);
+                .expect(/<!DOCTYPE html/u)
+                .expect(/<title>Error<\/title>/u);
         },
     );
 

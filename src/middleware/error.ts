@@ -47,6 +47,9 @@ function transformOpenApiError(err: HttpError): ErrorResponse {
             result.code = 'UNSUPPORTED_MEDIA_TYPE';
             result.message = err.message || 'Unsupported media type';
             break;
+
+        default:
+            break;
     }
 
     return result;
