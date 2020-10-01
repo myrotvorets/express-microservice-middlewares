@@ -48,6 +48,7 @@ function transformOpenApiError(err: HttpError): ErrorResponse {
             result.message = err.message || 'Unsupported media type';
             break;
 
+        /* istanbul ignore next */
         default:
             break;
     }

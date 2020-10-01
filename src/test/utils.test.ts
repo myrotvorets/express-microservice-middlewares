@@ -1,4 +1,4 @@
-import { badGatewayFromError } from '../utils';
+import { badGatewayFromError } from '../';
 
 describe('badGatewayFromError', (): void => {
     it('should return the expected response', (): void => {
