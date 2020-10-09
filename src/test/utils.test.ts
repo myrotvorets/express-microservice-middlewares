@@ -27,7 +27,7 @@ describe('helpers', () => {
         next();
     }
 
-    function middleware2(req: express.Request, res: express.Response, next: express.NextFunction): void {
+    function middleware2(req: express.Request, res: express.Response): void {
         res.append('Middleware', 'M2');
         res.send('');
     }
