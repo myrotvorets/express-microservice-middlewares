@@ -18,8 +18,7 @@ describe('badGatewayFromError', (): void => {
 
 describe('helpers', () => {
     function buildServer(): express.Application {
-        const server = express();
-        return server;
+        return express();
     }
 
     function middleware1(req: express.Request, res: express.Response, next: express.NextFunction): void {
