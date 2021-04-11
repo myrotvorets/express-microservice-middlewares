@@ -1,7 +1,7 @@
 import request from 'supertest';
 import express, { NextFunction, Request, RequestHandler, Response } from 'express';
 import { HttpError } from 'express-openapi-validator/dist/framework/types';
-import { ErrorResponse, errorMiddleware } from '..';
+import { ErrorResponse, errorMiddleware } from '../lib';
 
 function buildServer(fn: RequestHandler): express.Application {
     const server = express();

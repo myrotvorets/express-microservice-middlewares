@@ -1,6 +1,6 @@
 import request from 'supertest';
 import express from 'express';
-import { addJsonContentTypeMiddleware } from '..';
+import { addJsonContentTypeMiddleware } from '../lib';
 
 function buildServer(): express.Application {
     const server = express();

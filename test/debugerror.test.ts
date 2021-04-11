@@ -1,6 +1,6 @@
 import express, { NextFunction, Request, RequestHandler, Response } from 'express';
 import request from 'supertest';
-import { debugErrorMiddleware } from '..';
+import { debugErrorMiddleware } from '../lib';
 
 function buildServer(fn: RequestHandler): express.Application {
     const server = express();

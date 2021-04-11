@@ -1,6 +1,6 @@
 import request from 'supertest';
 import express from 'express';
-import { errorMiddleware, notFoundMiddleware } from '..';
+import { errorMiddleware, notFoundMiddleware } from '../lib';
 
 function buildServer(): express.Application {
     const server = express();

@@ -1,6 +1,6 @@
 import express from 'express';
 import request from 'supertest';
-import * as m from '..';
+import * as m from '../lib';
 
 describe('badGatewayFromError', (): void => {
     it('should return the expected response', (): void => {
