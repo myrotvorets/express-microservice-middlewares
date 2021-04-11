@@ -12,10 +12,9 @@
     "test": "jest"
   },
   "files": [
-    "!dist/test/",
-    "dist/**/*.d.ts",
-    "dist/**/*.js",
-    "dist/**/*.js.map"
+    "dist/lib/**/*.d.ts",
+    "dist/lib/**/*.js",
+    "dist/lib/**/*.js.map"
   ],
   "typings": "dist/index.d.ts",
   "keywords": [],
