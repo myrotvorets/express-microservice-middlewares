@@ -22,8 +22,6 @@ describe('debugErrorMiddleware', (): void => {
         const server = buildServer(handlerFactory(new Error('Some error')));
         return request(server)
             .get('/')
-            .then(() => {
-                expect(spy).toHaveBeenCalledTimes(1);
-            });
+            .then(() => expect(spy).toHaveBeenCalledTimes(1));
     });
 });
