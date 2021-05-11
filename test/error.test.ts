@@ -129,30 +129,27 @@ describe('errorMiddleware', (): void => {
         [405, 'METHOD_NOT_ALLOWED'],
         [413, 'REQUEST_TOO_LARGE'],
         [415, 'UNSUPPORTED_MEDIA_TYPE'],
-    ])(
-        'should handle OpenAPI errors (%d => %s)',
-        (status: number, expectedCode: string): Promise<unknown> => {
-            const expected: ErrorResponse = {
-                success: false,
-                status,
-                code: expectedCode,
-                message: 'Error',
-                errors: [{ path: '/', message: 'Error' }],
-            };
+    ])('should handle OpenAPI errors (%d => %s)', (status: number, expectedCode: string): Promise<unknown> => {
+        const expected: ErrorResponse = {
+            success: false,
+            status,
+            code: expectedCode,
+            message: 'Error',
+            errors: [{ path: '/', message: 'Error' }],
+        };
 
-            const server = buildServer(
-                handlerFactory(
-                    HttpError.create({
-                        status,
-                        path: '/',
-                        message: expected.message,
-                    }),
-                ),
-            );
+        const server = buildServer(
+            handlerFactory(
+                HttpError.create({
+                    status,
+                    path: '/',
+                    message: expected.message,
+                }),
+            ),
+        );
 
-            return request(server).get('/').expect(expected.status).expect(expected);
-        },
-    );
+        return request(server).get('/').expect(expected.status).expect(expected);
+    });
 
     it.each([
         [400, 'BAD_REQUEST', 'Request validation failed'],
