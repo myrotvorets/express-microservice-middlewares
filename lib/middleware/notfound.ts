@@ -8,6 +8,10 @@ const payload: ErrorResponse = {
     message: 'Not found',
 };
 
-export function notFoundMiddleware(req: Request, res: Response, next: NextFunction): void {
-    next(payload);
+export function notFoundMiddleware(req: Request, _res: Response, next: NextFunction): void {
+    if (!req.route) {
+        next(payload);
+    } else {
+        next();
+    }
 }
