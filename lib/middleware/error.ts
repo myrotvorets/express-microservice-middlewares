@@ -1,4 +1,4 @@
-import type { NextFunction, Request, Response } from 'express';
+import type { ErrorRequestHandler, NextFunction, Request, Response } from 'express';
 import { HttpError } from 'express-openapi-validator/dist/framework/types';
 import type { ErrorResponse } from './types';
 
@@ -56,45 +56,61 @@ function transformOpenApiError(err: HttpError): ErrorResponse {
     return result;
 }
 
-export function errorMiddleware(err: unknown, req: Request, res: Response, next: NextFunction): void {
-    if (res.headersSent || typeof err !== 'object' || err === null || Array.isArray(err)) {
-        next(err);
-        return;
-    }
-
-    let error: ErrorResponse;
-
-    if (req.overriddenError) {
-        error = req.overriddenError;
-        req.overriddenError = undefined;
-    } else if (err instanceof HttpError) {
-        error = transformOpenApiError(err);
-    } else if ('status' in err) {
-        const { status = 500, code = 'UNKNOWN_ERROR', message = 'Unknown error' } = err as Record<string, unknown>;
-        error = {
-            success: false,
-            status: +`${status}`,
-            code: `${code}`,
-            message: `${message}`,
-        };
-    } else {
-        error = {
-            success: false,
-            status: 500,
-            code: 'UNKNOWN_ERROR',
-            message: err instanceof Error ? err.message : 'Unknown error',
-        };
-    }
-
-    const { additionalHeaders } = error;
-    if (additionalHeaders) {
-        Object.keys(additionalHeaders).forEach((header) => res.header(header, additionalHeaders[header]));
-    }
-
-    error.additionalHeaders = undefined;
-    if (error.status < 400 || error.status > 599) {
-        error.status = 500;
-    }
-
-    res.status(error.status).json(error);
+export interface ErrorMiddlewareOptions {
+    beforeSendHook?: (error: ErrorResponse | null, originalError: unknown, req: Request, res: Response) => boolean;
 }
+
+const defaultBeforeSendHook = (): boolean => true;
+
+export function errorMiddlewareEx(options: ErrorMiddlewareOptions = {}): ErrorRequestHandler {
+    const beforeSend = options.beforeSendHook ?? defaultBeforeSendHook;
+    return function errorHandlerMiddleware(err: unknown, req: Request, res: Response, next: NextFunction): void {
+        if (res.headersSent || typeof err !== 'object' || err === null || Array.isArray(err)) {
+            if (beforeSend(null, err, req, res)) {
+                next(err);
+            }
+
+            return;
+        }
+
+        let error: ErrorResponse;
+
+        if (req.overriddenError) {
+            error = req.overriddenError;
+            req.overriddenError = undefined;
+        } else if (err instanceof HttpError) {
+            error = transformOpenApiError(err);
+        } else if ('status' in err) {
+            const { status = 500, code = 'UNKNOWN_ERROR', message = 'Unknown error' } = err as Record<string, unknown>;
+            error = {
+                success: false,
+                status: +`${status}`,
+                code: `${code}`,
+                message: `${message}`,
+            };
+        } else {
+            error = {
+                success: false,
+                status: 500,
+                code: 'UNKNOWN_ERROR',
+                message: err instanceof Error ? err.message : 'Unknown error',
+            };
+        }
+
+        if (error.status < 400 || error.status > 599) {
+            error.status = 500;
+        }
+
+        if (beforeSend(error, err, req, res)) {
+            const { additionalHeaders } = error;
+            if (additionalHeaders) {
+                Object.keys(additionalHeaders).forEach((header) => res.header(header, additionalHeaders[header]));
+            }
+
+            error.additionalHeaders = undefined;
+            res.status(error.status).json(error);
+        }
+    };
+}
+
+export const errorMiddleware: ErrorRequestHandler = errorMiddlewareEx();

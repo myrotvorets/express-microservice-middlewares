@@ -1,7 +1,7 @@
 import request from 'supertest';
 import express, { NextFunction, Request, RequestHandler, Response } from 'express';
 import { HttpError } from 'express-openapi-validator/dist/framework/types';
-import { ErrorResponse, errorMiddleware } from '../lib';
+import { type ErrorMiddlewareOptions, ErrorResponse, errorMiddleware, errorMiddlewareEx } from '../lib';
 
 function buildServer(fn: RequestHandler): express.Application {
     const server = express();
@@ -182,4 +182,25 @@ describe('errorMiddleware', (): void => {
             return request(server).get('/').expect(expected.status).expect(expected);
         },
     );
+});
+
+describe('ErrorMiddlewareEx', () => {
+    it('should allow to intercept the error', () => {
+        const expected = {
+            success: true,
+            message: 'Intercepted',
+        };
+
+        const beforeSendHook: ErrorMiddlewareOptions['beforeSendHook'] = (_error, _origError, _req, res): boolean => {
+            res.json(expected);
+            return false;
+        };
+
+        const server = express();
+        server.set('mode', 'production');
+        server.use(handlerFactory({}));
+        server.use(errorMiddlewareEx({ beforeSendHook }));
+
+        return request(server).get('/').expect(200).expect(expected);
+    });
 });
