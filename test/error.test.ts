@@ -182,6 +182,51 @@ describe('errorMiddleware', (): void => {
             return request(server).get('/').expect(expected.status).expect(expected);
         },
     );
+
+    it.each([
+        [400, 'entity.parse.failed', 'BAD_REQUEST', 'Request validation failed'],
+        [400, 'request.aborted', 'BAD_REQUEST', 'Request validation failed'],
+        [400, 'request.size.invalid', 'BAD_REQUEST', 'Request validation failed'],
+        [403, 'entity.verify.failed', 'FORBIDDEN', 'Access denied'],
+        [413, 'entity.too.large', 'REQUEST_TOO_LARGE', 'Request entity too large'],
+        [413, 'parameters.too.many', 'REQUEST_TOO_LARGE', 'Request entity too large'],
+        [415, 'encoding.unsupported', 'UNSUPPORTED_MEDIA_TYPE', 'Unsupported media type'],
+        [415, 'charset.unsupported', 'UNSUPPORTED_MEDIA_TYPE', 'Unsupported media type'],
+    ])(
+        'should handle SyntaxError (%d => %s / %s)',
+        (status: number, type: string, expectedCode: string, expectedMessage: string): Promise<unknown> => {
+            const expected: ErrorResponse = {
+                success: false,
+                status,
+                code: expectedCode,
+                message: expectedMessage,
+            };
+
+            const err: SyntaxError & { status?: number; type?: string } = new SyntaxError();
+            err.status = status;
+            err.type = type;
+
+            const server = buildServer(handlerFactory(err));
+
+            return request(server).get('/').expect(expected.status).expect(expected);
+        },
+    );
+
+    it('should handle unknown syntax errors', () => {
+        const expected: ErrorResponse = {
+            success: false,
+            status: 500,
+            code: 'UNKNOWN_ERROR',
+            message: 'Unknown error',
+        };
+
+        const err: SyntaxError & { status?: number; type?: string } = new SyntaxError();
+        err.type = 'stream.not.readable';
+
+        const server = buildServer(handlerFactory(err));
+
+        return request(server).get('/').expect(expected.status).expect(expected);
+    });
 });
 
 describe('ErrorMiddlewareEx', () => {

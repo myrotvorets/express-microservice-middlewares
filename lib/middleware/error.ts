@@ -56,6 +56,52 @@ function transformOpenApiError(err: HttpError): ErrorResponse {
     return result;
 }
 
+function transformSyntaxError(err: SyntaxError): ErrorResponse {
+    const result: ErrorResponse = {
+        success: false,
+        status: 500,
+        code: 'UNKNOWN_ERROR',
+        message: 'Unknown error',
+    };
+
+    if ('status' in err && typeof err.status === 'number') {
+        result.status = err.status;
+    }
+
+    if ('type' in err && typeof err.type === 'string') {
+        switch (err.type) {
+            case 'entity.parse.failed':
+            case 'request.aborted':
+            case 'request.size.invalid':
+                result.code = 'BAD_REQUEST';
+                result.message = err.message || 'Request validation failed';
+                break;
+
+            case 'encoding.unsupported':
+            case 'charset.unsupported':
+                result.code = 'UNSUPPORTED_MEDIA_TYPE';
+                result.message = err.message || 'Unsupported media type';
+                break;
+
+            case 'entity.verify.failed':
+                result.code = 'FORBIDDEN';
+                result.message = err.message || 'Access denied';
+                break;
+
+            case 'entity.too.large':
+            case 'parameters.too.many':
+                result.code = 'REQUEST_TOO_LARGE';
+                result.message = err.message || 'Request entity too large';
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    return result;
+}
+
 export interface ErrorMiddlewareOptions {
     beforeSendHook?: (error: ErrorResponse | null, originalError: unknown, req: Request, res: Response) => boolean;
 }
@@ -80,6 +126,8 @@ export function errorMiddlewareEx(options: ErrorMiddlewareOptions = {}): ErrorRe
             req.overriddenError = undefined;
         } else if (err instanceof HttpError) {
             error = transformOpenApiError(err);
+        } else if (err instanceof SyntaxError) {
+            error = transformSyntaxError(err);
         } else if ('status' in err) {
             const { status = 500, code = 'UNKNOWN_ERROR', message = 'Unknown error' } = err as Record<string, unknown>;
             error = {
