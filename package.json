@@ -1,6 +1,6 @@
 {
   "name": "@myrotvorets/express-microservice-middlewares",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "description": "Middlewares internally used by our microservices",
   "main": "dist/lib/index.js",
   "scripts": {
