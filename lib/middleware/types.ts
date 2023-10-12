@@ -13,11 +13,11 @@ export interface ErrorResponse {
               error_code?: string;
           }
     )[];
-    additionalHeaders?: Record<string, string>;
+    additionalHeaders?: Record<string, string> | undefined;
 }
 
 declare module 'express' {
     interface Request {
-        overriddenError?: ErrorResponse;
+        overriddenError?: ErrorResponse | undefined;
     }
 }
