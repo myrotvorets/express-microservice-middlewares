@@ -97,11 +97,11 @@ describe('errorMiddleware', (): void => {
 
             const e: Record<string, string | number | undefined> = { status };
             if (code) {
-                e.code = code;
+                e['code'] = code;
             }
 
             if (message) {
-                e.message = message;
+                e['message'] = message;
             }
 
             const server = buildServer(handlerFactory(e));

@@ -1,4 +1,4 @@
-import { ValidationErrorItem } from 'express-openapi-validator/dist/framework/types';
+import type { ValidationErrorItem } from 'express-openapi-validator/dist/framework/types';
 
 export interface ErrorResponse {
     success: false;
@@ -13,11 +13,11 @@ export interface ErrorResponse {
               error_code?: string;
           }
     )[];
-    additionalHeaders?: Record<string, string>;
+    additionalHeaders?: Record<string, string> | undefined; // NOSONAR
 }
 
 declare module 'express' {
     interface Request {
-        overriddenError?: ErrorResponse;
+        overriddenError?: ErrorResponse | undefined; // NOSONAR
     }
 }

@@ -15,7 +15,7 @@ function attach<P, ResBody, ReqBody, ReqQuery>(
     what: IRouter,
     path: PathParams,
     method: 'all' | 'get' | 'post' | 'put' | 'delete' | 'patch' | 'options' | 'head' | 'use',
-    handlers: Array<RequestHandler<P, ResBody, ReqBody, ReqQuery>>,
+    handlers: RequestHandler<P, ResBody, ReqBody, ReqQuery>[],
 ): void {
     handlers.forEach((handler) => what[method](path, handler));
 }
@@ -24,7 +24,7 @@ function attach<P, ResBody, ReqBody, ReqQuery>(
 export function use<P = ParamsDictionary, ResBody = any, ReqBody = any, ReqQuery = Query>(
     what: IRouter,
     path: PathParams,
-    ...handlers: Array<RequestHandler<P, ResBody, ReqBody, ReqQuery>>
+    ...handlers: RequestHandler<P, ResBody, ReqBody, ReqQuery>[]
 ): void {
     attach(what, path, 'use', handlers);
 }
@@ -33,7 +33,7 @@ export function use<P = ParamsDictionary, ResBody = any, ReqBody = any, ReqQuery
 export function all<P = ParamsDictionary, ResBody = any, ReqBody = any, ReqQuery = Query>(
     what: IRouter,
     path: PathParams,
-    ...handlers: Array<RequestHandler<P, ResBody, ReqBody, ReqQuery>>
+    ...handlers: RequestHandler<P, ResBody, ReqBody, ReqQuery>[]
 ): void {
     attach(what, path, 'all', handlers);
 }
@@ -42,7 +42,7 @@ export function all<P = ParamsDictionary, ResBody = any, ReqBody = any, ReqQuery
 export function get<P = ParamsDictionary, ResBody = any, ReqBody = any, ReqQuery = Query>(
     what: IRouter,
     path: PathParams,
-    ...handlers: Array<RequestHandler<P, ResBody, ReqBody, ReqQuery>>
+    ...handlers: RequestHandler<P, ResBody, ReqBody, ReqQuery>[]
 ): void {
     attach(what, path, 'get', handlers);
 }
@@ -51,7 +51,7 @@ export function get<P = ParamsDictionary, ResBody = any, ReqBody = any, ReqQuery
 export function post<P = ParamsDictionary, ResBody = any, ReqBody = any, ReqQuery = Query>(
     what: IRouter,
     path: PathParams,
-    ...handlers: Array<RequestHandler<P, ResBody, ReqBody, ReqQuery>>
+    ...handlers: RequestHandler<P, ResBody, ReqBody, ReqQuery>[]
 ): void {
     attach(what, path, 'post', handlers);
 }
@@ -60,7 +60,7 @@ export function post<P = ParamsDictionary, ResBody = any, ReqBody = any, ReqQuer
 export function put<P = ParamsDictionary, ResBody = any, ReqBody = any, ReqQuery = Query>(
     what: IRouter,
     path: PathParams,
-    ...handlers: Array<RequestHandler<P, ResBody, ReqBody, ReqQuery>>
+    ...handlers: RequestHandler<P, ResBody, ReqBody, ReqQuery>[]
 ): void {
     attach(what, path, 'put', handlers);
 }
@@ -69,7 +69,7 @@ export function put<P = ParamsDictionary, ResBody = any, ReqBody = any, ReqQuery
 export function del<P = ParamsDictionary, ResBody = any, ReqBody = any, ReqQuery = Query>(
     what: IRouter,
     path: PathParams,
-    ...handlers: Array<RequestHandler<P, ResBody, ReqBody, ReqQuery>>
+    ...handlers: RequestHandler<P, ResBody, ReqBody, ReqQuery>[]
 ): void {
     attach(what, path, 'delete', handlers);
 }
@@ -78,7 +78,7 @@ export function del<P = ParamsDictionary, ResBody = any, ReqBody = any, ReqQuery
 export function patch<P = ParamsDictionary, ResBody = any, ReqBody = any, ReqQuery = Query>(
     what: IRouter,
     path: PathParams,
-    ...handlers: Array<RequestHandler<P, ResBody, ReqBody, ReqQuery>>
+    ...handlers: RequestHandler<P, ResBody, ReqBody, ReqQuery>[]
 ): void {
     attach(what, path, 'patch', handlers);
 }
@@ -87,7 +87,7 @@ export function patch<P = ParamsDictionary, ResBody = any, ReqBody = any, ReqQue
 export function options<P = ParamsDictionary, ResBody = any, ReqBody = any, ReqQuery = Query>(
     what: IRouter,
     path: PathParams,
-    ...handlers: Array<RequestHandler<P, ResBody, ReqBody, ReqQuery>>
+    ...handlers: RequestHandler<P, ResBody, ReqBody, ReqQuery>[]
 ): void {
     attach(what, path, 'options', handlers);
 }
@@ -96,7 +96,7 @@ export function options<P = ParamsDictionary, ResBody = any, ReqBody = any, ReqQ
 export function head<P = ParamsDictionary, ResBody = any, ReqBody = any, ReqQuery = Query>(
     what: IRouter,
     path: PathParams,
-    ...handlers: Array<RequestHandler<P, ResBody, ReqBody, ReqQuery>>
+    ...handlers: RequestHandler<P, ResBody, ReqBody, ReqQuery>[]
 ): void {
     attach(what, path, 'head', handlers);
 }
