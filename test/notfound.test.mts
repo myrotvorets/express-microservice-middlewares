@@ -1,8 +1,8 @@
 import request from 'supertest';
-import express, { type Application } from 'express';
-import { errorMiddleware, notFoundMiddleware } from '../lib';
+import express, { type Express } from 'express';
+import { errorMiddleware, notFoundMiddleware } from '../lib/index.mjs';
 
-function buildServer(): Application {
+function buildServer(): Express {
     const server = express();
     server.get('/test', (_req, res, next) => {
         res.json({ success: true });
@@ -13,8 +13,8 @@ function buildServer(): Application {
     return server;
 }
 
-describe('notFoundMiddleware', (): void => {
-    it('should return a proper payload', (): Promise<unknown> => {
+describe('notFoundMiddleware', function () {
+    it('should return a proper payload', function () {
         const server = buildServer();
         return request(server)
             .get('/')
@@ -22,7 +22,7 @@ describe('notFoundMiddleware', (): void => {
             .expect({ success: false, status: 404, code: 'NOT_FOUND', message: 'Not found' });
     });
 
-    it('should honor request.route', (): Promise<unknown> => {
+    it('should honor request.route', function () {
         const server = buildServer();
         return request(server).get('/test').expect(200).expect({ success: true });
     });

@@ -1,4 +1,4 @@
-import type { ErrorResponse } from '../middleware/types';
+import type { ErrorResponse } from '../middleware/types.mjs';
 
 export function badGatewayFromError(err: Error): ErrorResponse {
     return {

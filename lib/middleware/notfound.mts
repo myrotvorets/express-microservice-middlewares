@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from 'express';
-import type { ErrorResponse } from './types';
+import type { ErrorResponse } from './types.mjs';
 
 const payload: ErrorResponse = {
     success: false,

@@ -1,6 +1,6 @@
 import type { ErrorRequestHandler, NextFunction, Request, Response } from 'express';
-import { HttpError } from 'express-openapi-validator/dist/framework/types';
-import type { ErrorResponse } from './types';
+import { HttpError } from 'express-openapi-validator/dist/framework/types.js';
+import type { ErrorResponse } from './types.mjs';
 
 function transformOpenApiError(err: HttpError): ErrorResponse {
     const result: ErrorResponse = {
@@ -48,9 +48,10 @@ function transformOpenApiError(err: HttpError): ErrorResponse {
             result.message = err.message || 'Unsupported media type';
             break;
 
-        /* istanbul ignore next */
+        /* c8 ignore start */
         default:
             break;
+        /* c8 ignore stop */
     }
 
     return result;
