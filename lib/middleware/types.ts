@@ -1,4 +1,4 @@
-import { ValidationErrorItem } from 'express-openapi-validator/dist/framework/types';
+import type { ValidationErrorItem } from 'express-openapi-validator/dist/framework/types';
 
 export interface ErrorResponse {
     success: false;
