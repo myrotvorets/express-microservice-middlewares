@@ -5,7 +5,6 @@ import { type ErrorMiddlewareOptions, ErrorResponse, errorMiddleware, errorMiddl
 
 function buildServer(fn: RequestHandler): Express {
     const server = express();
-    server.set('mode', 'production');
     server.use(fn);
     server.use(errorMiddleware);
     return server;
