@@ -244,6 +244,21 @@ describe('Error', function () {
 
             return request(server).get('/').expect(expected.status).expect(expected);
         });
+
+        // eslint-disable-next-line mocha/no-setup-in-describe
+        [502, 503, 504].forEach((status) =>
+            it(`should send 500 for status=${status}`, function () {
+                const expected: ErrorResponse = {
+                    success: false,
+                    status,
+                    code: 'UNKNOWN_ERROR',
+                    message: 'Unknown error',
+                };
+
+                const server = buildServer(handlerFactory(expected));
+                return request(server).get('/').expect(500).expect(expected);
+            }),
+        );
     });
 
     describe('ErrorMiddlewareEx', function () {

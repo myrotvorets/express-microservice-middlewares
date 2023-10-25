@@ -156,8 +156,13 @@ export function errorMiddlewareEx(options: ErrorMiddlewareOptions = {}): ErrorRe
                 Object.keys(additionalHeaders).forEach((header) => res.header(header, additionalHeaders[header]));
             }
 
+            let statusCode = error.status;
+            if ([502, 503, 504].includes(statusCode)) {
+                statusCode = 500;
+            }
+
             error.additionalHeaders = undefined;
-            res.status(error.status).json(error);
+            res.status(statusCode).json(error);
         }
     };
 }
