@@ -1,72 +1,48 @@
 import type { ErrorRequestHandler, NextFunction, Request, Response } from 'express';
 import { HttpError } from 'express-openapi-validator/dist/framework/types.js';
-import type { ErrorResponse } from './types.mjs';
+import { ApiErrorResponse } from './types.mjs';
+import { ApiError } from '../apierror.mjs';
 
-function transformOpenApiError(err: HttpError): ErrorResponse {
-    const result: ErrorResponse = {
-        success: false,
-        status: 500,
-        code: 'UNKNOWN_ERROR',
-        message: 'Unknown error',
-    };
+const statusMap: Record<number, string> = {
+    400: 'BAD_REQUEST',
+    401: 'UNAUTHORIZED',
+    403: 'FORBIDDEN',
+    404: 'NOT_FOUND',
+    405: 'METHOD_NOT_ALLOWED',
+    413: 'REQUEST_TOO_LARGE',
+    415: 'UNSUPPORTED_MEDIA_TYPE',
+};
 
-    result.status = err.status;
-    result.errors = err.errors;
-    switch (err.status) {
-        case 400:
-            result.code = 'BAD_REQUEST';
-            result.message = err.message || 'Request validation failed';
-            break;
+const messageMap: Record<number, string> = {
+    400: 'Request validation failed',
+    401: 'You are not authorized to perform this request',
+    403: 'Access denied',
+    404: 'Not found',
+    405: 'Method not allowed',
+    413: 'Request entity too large',
+    415: 'Unsupported media type',
+};
 
-        case 401:
-            result.code = 'UNAUTHORIZED';
-            result.message = err.message || 'You are not authorized to perform this request';
-            break;
+function transformOpenApiError(err: HttpError): ApiError {
+    const { status, errors, message } = err;
+    const code = statusMap[status] ?? 'UNKNOWN_ERROR';
 
-        case 403:
-            result.code = 'FORBIDDEN';
-            result.message = err.message || 'Access denied';
-            break;
-
-        case 404:
-            result.code = 'NOT_FOUND';
-            result.message = err.message || 'Not found';
-            break;
-
-        case 405:
-            result.code = 'METHOD_NOT_ALLOWED';
-            result.message = err.message || 'Method not allowed';
-            break;
-
-        case 413:
-            result.code = 'REQUEST_TOO_LARGE';
-            result.message = err.message || 'Request entity too large';
-            break;
-
-        case 415:
-            result.code = 'UNSUPPORTED_MEDIA_TYPE';
-            result.message = err.message || 'Unsupported media type';
-            break;
-
-        /* c8 ignore start */
-        default:
-            break;
-        /* c8 ignore stop */
+    const result = new ApiError(status, code, message || (messageMap[status] ?? ''), { cause: err });
+    result.errors = errors;
+    if (err.headers) {
+        result.additionalHeaders = { ...err.headers };
     }
 
     return result;
 }
 
-function transformSyntaxError(err: SyntaxError): ErrorResponse {
-    const result: ErrorResponse = {
-        success: false,
-        status: 500,
-        code: 'UNKNOWN_ERROR',
-        message: 'Unknown error',
-    };
+function transformSyntaxError(err: SyntaxError): ApiError {
+    let status = 500;
+    let code = 'UNKNOWN_ERROR';
+    let message = 'Unknown error';
 
     if ('status' in err && typeof err.status === 'number') {
-        result.status = err.status;
+        status = err.status;
     }
 
     if ('type' in err && typeof err.type === 'string') {
@@ -74,25 +50,25 @@ function transformSyntaxError(err: SyntaxError): ErrorResponse {
             case 'entity.parse.failed':
             case 'request.aborted':
             case 'request.size.invalid':
-                result.code = 'BAD_REQUEST';
-                result.message = err.message || 'Request validation failed';
+                code = 'BAD_REQUEST';
+                message = err.message || 'Request validation failed';
                 break;
 
             case 'encoding.unsupported':
             case 'charset.unsupported':
-                result.code = 'UNSUPPORTED_MEDIA_TYPE';
-                result.message = err.message || 'Unsupported media type';
+                code = 'UNSUPPORTED_MEDIA_TYPE';
+                message = err.message || 'Unsupported media type';
                 break;
 
             case 'entity.verify.failed':
-                result.code = 'FORBIDDEN';
-                result.message = err.message || 'Access denied';
+                code = 'FORBIDDEN';
+                message = err.message || 'Access denied';
                 break;
 
             case 'entity.too.large':
             case 'parameters.too.many':
-                result.code = 'REQUEST_TOO_LARGE';
-                result.message = err.message || 'Request entity too large';
+                code = 'REQUEST_TOO_LARGE';
+                message = err.message || 'Request entity too large';
                 break;
 
             default:
@@ -100,16 +76,24 @@ function transformSyntaxError(err: SyntaxError): ErrorResponse {
         }
     }
 
-    return result;
+    return new ApiError(status, code, message, { cause: err });
+}
+
+function transformObjectToError(err: object): ApiError {
+    const status = 'status' in err && typeof err.status === 'number' && Number.isInteger(err.status) ? err.status : 500;
+    const code = 'code' in err && typeof err.code === 'string' ? err.code : 'UNKNOWN_ERROR';
+    const message = 'message' in err && typeof err.message === 'string' ? err.message : 'Unknown error';
+    const cause = err instanceof Error ? err : undefined;
+    return new ApiError(status, code, message, { cause });
 }
 
 export interface ErrorMiddlewareOptions {
-    beforeSendHook?: (error: ErrorResponse | null, originalError: unknown, req: Request, res: Response) => boolean;
+    beforeSendHook?: (error: ApiError | null, originalError: unknown, req: Request, res: Response) => boolean;
 }
 
 const defaultBeforeSendHook = (): boolean => true;
 
-export function errorMiddlewareEx(options: ErrorMiddlewareOptions = {}): ErrorRequestHandler {
+export function errorMiddleware(options: ErrorMiddlewareOptions = {}): ErrorRequestHandler {
     const beforeSend = options.beforeSendHook ?? defaultBeforeSendHook;
     return function errorHandlerMiddleware(err: unknown, req: Request, res: Response, next: NextFunction): void {
         if (res.headersSent || typeof err !== 'object' || err === null || Array.isArray(err)) {
@@ -120,51 +104,44 @@ export function errorMiddlewareEx(options: ErrorMiddlewareOptions = {}): ErrorRe
             return;
         }
 
-        let error: ErrorResponse;
+        let error: ApiError;
 
         if (req.overriddenError) {
             error = req.overriddenError;
-            req.overriddenError = undefined;
+            delete req.overriddenError;
         } else if (err instanceof HttpError) {
             error = transformOpenApiError(err);
         } else if (err instanceof SyntaxError) {
             error = transformSyntaxError(err);
-        } else if ('status' in err) {
-            const { status = 500, code = 'UNKNOWN_ERROR', message = 'Unknown error' } = err as Record<string, unknown>;
-            error = {
-                success: false,
-                status: +`${status}`,
-                code: `${code}`,
-                message: `${message}`,
-            };
+        } else if (!(err instanceof ApiError)) {
+            error = transformObjectToError(err);
         } else {
-            error = {
-                success: false,
-                status: 500,
-                code: 'UNKNOWN_ERROR',
-                message: err instanceof Error ? err.message : 'Unknown error',
-            };
-        }
-
-        if (error.status < 400 || error.status > 599) {
-            error.status = 500;
+            error = err;
         }
 
         if (beforeSend(error, err, req, res)) {
-            const { additionalHeaders } = error;
-            if (additionalHeaders) {
-                Object.keys(additionalHeaders).forEach((header) => res.header(header, additionalHeaders[header]));
-            }
-
             let statusCode = error.status;
-            if ([502, 503, 504].includes(statusCode)) {
+            if ([502, 503, 504].includes(statusCode) || error.status < 400 || error.status > 599) {
                 statusCode = 500;
             }
 
-            error.additionalHeaders = undefined;
-            res.status(statusCode).json(error);
+            const response: ApiErrorResponse = {
+                success: false,
+                status: error.status,
+                code: error.code,
+                message: error.errorMessage,
+            };
+
+            if (error.errors.length > 0) {
+                response.errors = error.errors;
+            }
+
+            res.status(statusCode);
+            Object.keys(error.additionalHeaders).forEach((header) =>
+                res.header(header, error.additionalHeaders[header]),
+            );
+
+            res.json(response);
         }
     };
 }
-
-export const errorMiddleware: ErrorRequestHandler = errorMiddlewareEx();

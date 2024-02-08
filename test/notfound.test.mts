@@ -9,7 +9,7 @@ function buildServer(): Express {
         next();
     });
     server.use(notFoundMiddleware);
-    server.use(errorMiddleware);
+    server.use(errorMiddleware());
     return server;
 }
 
