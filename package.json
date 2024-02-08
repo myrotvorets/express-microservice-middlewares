@@ -1,6 +1,6 @@
 {
   "name": "@myrotvorets/express-microservice-middlewares",
-  "version": "2.2.0",
+  "version": "3.0.0",
   "description": "Middlewares internally used by our microservices",
   "exports": "./dist/lib/index.mjs",
   "type": "module",
