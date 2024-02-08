@@ -1,10 +1,4 @@
-import type { ErrorResponse } from '../middleware/types.mjs';
+import { ApiError } from '../apierror.mjs';
 
-export function badGatewayFromError(err: Error): ErrorResponse {
-    return {
-        success: false,
-        status: 502,
-        code: 'BAD_GATEWAY',
-        message: err.message,
-    };
-}
+export const badGatewayFromError = (err: Error): ApiError =>
+    new ApiError(502, 'BAD_GATEWAY', err.message, { cause: err });

@@ -1,16 +1,22 @@
 import { expect } from 'chai';
-import { badGatewayFromError } from '../lib/index.mjs';
+import { ApiError, badGatewayFromError } from '../lib/index.mjs';
 
 describe('badGatewayFromError', function () {
     it('should return the expected response', function () {
         const expected = {
-            success: false,
             status: 502,
             code: 'BAD_GATEWAY',
             message: 'Error message',
         };
 
         const error = new Error(expected.message);
-        expect(badGatewayFromError(error)).to.deep.equal(expected);
+        const actual = badGatewayFromError(error);
+        expect(actual).to.be.instanceOf(ApiError).that.includes({
+            status: expected.status,
+            code: expected.code,
+            errorMessage: expected.message,
+        });
+
+        expect(actual.cause).to.deep.equal(error);
     });
 });
