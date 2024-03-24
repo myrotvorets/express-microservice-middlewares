@@ -16,9 +16,11 @@ jobs:
         with:
           egress-policy: block
           allowed-endpoints: >
-            api.github.com:443
-            github.com:443
             api.deps.dev:443
+            api.github.com:443
+            api.scorecards.dev:443
+            github.com:443
+
 
       - name: Check out the source code
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
