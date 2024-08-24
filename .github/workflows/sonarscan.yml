@@ -18,6 +18,9 @@ env:
 
 jobs:
   build:
+    permissions:
+      contents: read
+      security-events: write
     name: SonarCloud Scan
     runs-on: ubuntu-latest
     if: |
