@@ -1,14 +1,19 @@
+import type { RequestListener } from 'node:http';
 import { expect } from 'chai';
 import request from 'supertest';
-import express, { type Express } from 'express';
+import express from 'express';
 import { addJsonContentTypeMiddleware } from '../lib/index.mjs';
 
-function buildServer(): Express {
+function buildServer(): RequestListener {
     const server = express();
-    server.use('/nojson', (_req, res) => res.send('{ "hello": "world" }'));
+    server.use('/nojson', (_req, res) => {
+        res.send('{ "hello": "world" }');
+    });
     server.use(addJsonContentTypeMiddleware);
-    server.use('/json', (_req, res) => res.send('{ "hello": "world" }'));
-    return server;
+    server.use('/json', (_req, res) => {
+        res.send('{ "hello": "world" }');
+    });
+    return server as RequestListener;
 }
 
 describe('addJsonContentTypeMiddleware', function () {

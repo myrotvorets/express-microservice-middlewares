@@ -1,14 +1,15 @@
+import type { RequestListener } from 'node:http';
 import { expect } from 'chai';
-import express, { type Express, type RequestHandler } from 'express';
+import express, { type RequestHandler } from 'express';
 import request from 'supertest';
 import { debugErrorMiddleware } from '../lib/index.mjs';
 
-function buildServer(fn: RequestHandler): Express {
+function buildServer(fn: RequestHandler): RequestListener {
     const server = express();
     server.set('mode', 'production');
     server.use(fn);
     server.use(debugErrorMiddleware);
-    return server;
+    return server as RequestListener;
 }
 
 const handlerFactory =
