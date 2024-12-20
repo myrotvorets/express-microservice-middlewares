@@ -1,4 +1,4 @@
-import { ValidationErrorItem } from 'express-openapi-validator/dist/framework/types.js';
+import type { ValidationErrorItem } from 'express-openapi-validator/dist/framework/types.js';
 import type { ApiErrorResponse } from './index.mjs';
 
 export class ApiError extends Error {
