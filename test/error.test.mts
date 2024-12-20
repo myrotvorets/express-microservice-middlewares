@@ -1,14 +1,15 @@
+import type { RequestListener } from 'node:http';
 import request from 'supertest';
-import express, { type Express, type NextFunction, type Request, RequestHandler, type Response } from 'express';
+import express, { type NextFunction, type Request, RequestHandler, type Response } from 'express';
 import { HttpError, InternalServerError, MethodNotAllowed } from 'express-openapi-validator/dist/framework/types.js';
 import { ApiError, type ApiErrorResponse, type ErrorMiddlewareOptions, errorMiddleware } from '../lib/index.mjs';
 
-function buildServer(fn: RequestHandler): Express {
+function buildServer(fn: RequestHandler): RequestListener {
     const server = express();
     server.set('env', 'test');
     server.use(fn);
     server.use(errorMiddleware());
-    return server;
+    return server as RequestListener;
 }
 
 const handlerFactory =
@@ -298,6 +299,9 @@ describe('errorMiddleware', function () {
         server.use(handlerFactory({}));
         server.use(errorMiddleware({ beforeSendHook }));
 
-        return request(server).get('/').expect(200).expect(expected);
+        return request(server as RequestListener)
+            .get('/')
+            .expect(200)
+            .expect(expected);
     });
 });

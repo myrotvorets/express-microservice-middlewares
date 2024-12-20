@@ -1,8 +1,9 @@
+import type { RequestListener } from 'node:http';
 import request from 'supertest';
-import express, { type Express } from 'express';
+import express from 'express';
 import { errorMiddleware, notFoundMiddleware } from '../lib/index.mjs';
 
-function buildServer(): Express {
+function buildServer(): RequestListener {
     const server = express();
     server.get('/test', (_req, res, next) => {
         res.json({ success: true });
@@ -10,7 +11,7 @@ function buildServer(): Express {
     });
     server.use(notFoundMiddleware);
     server.use(errorMiddleware());
-    return server;
+    return server as RequestListener;
 }
 
 describe('notFoundMiddleware', function () {
