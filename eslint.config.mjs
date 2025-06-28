@@ -15,5 +15,8 @@ export default [
                 ...globals.node,
             },
         },
+        rules: {
+            'mocha/consistent-spacing-between-blocks': 'off',
+        },
     },
 ];
