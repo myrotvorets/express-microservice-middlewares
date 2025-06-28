@@ -1,5 +1,6 @@
+import assert, { deepEqual, doesNotMatch } from 'node:assert/strict';
+import { describe, it } from 'node:test';
 import type { RequestListener } from 'node:http';
-import { expect } from 'chai';
 import request from 'supertest';
 import express from 'express';
 import { addJsonContentTypeMiddleware } from '../lib/index.mjs';
@@ -16,20 +17,22 @@ function buildServer(): RequestListener {
     return server as RequestListener;
 }
 
-describe('addJsonContentTypeMiddleware', function () {
-    it('should add proper Content-Type', function () {
+await describe('addJsonContentTypeMiddleware', async function () {
+    await it('should add proper Content-Type', async function () {
         const server = buildServer();
-        return request(server).get('/json').expect(200).expect('Content-Type', /json/u).expect({ hello: 'world' });
+        await request(server).get('/json').expect(200).expect('Content-Type', /json/u).expect({ hello: 'world' });
     });
 
-    it('should pass the sanity check', function () {
+    await it('should pass the sanity check', async function () {
         const server = buildServer();
-        return request(server)
+        await request(server)
             .get('/nojson')
             .expect(200)
             .expect((r) => {
-                expect(r.get('content-type')).not.to.match(/json/u);
-                expect(r.body).to.deep.equal({});
+                const contentType = r.get('content-type');
+                assert(typeof contentType === 'string');
+                doesNotMatch(contentType, /json/u);
+                deepEqual(r.body, {});
             });
     });
 });

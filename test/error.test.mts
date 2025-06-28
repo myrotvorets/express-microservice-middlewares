@@ -1,3 +1,5 @@
+/* eslint-disable no-await-in-loop */
+import { describe, it } from 'node:test';
 import type { RequestListener } from 'node:http';
 import request from 'supertest';
 import express, { type NextFunction, type Request, RequestHandler, type Response } from 'express';
@@ -23,32 +25,30 @@ function handlerForOverriddenError(req: Request, _res: Response, next: NextFunct
     next(new Error('some error'));
 }
 
-describe('errorMiddleware', function () {
-    // eslint-disable-next-line mocha/no-setup-in-describe
-    [123, 'string', [], Infinity, -Infinity].forEach((e: unknown) =>
-        it(`should invoke the default handler (${e})`, function () {
+await describe('errorMiddleware', async function () {
+    for (const e of [123, 'string', [], Infinity, -Infinity]) {
+        await it(`should invoke the default handler (${e})`, async function () {
             const server = buildServer(handlerFactory(e));
-            return request(server)
+            await request(server)
                 .get('/')
                 .expect(500)
                 .expect(/<!DOCTYPE html/u)
                 .expect(/<title>Error<\/title>/u);
-        }),
-    );
+        });
+    }
 
-    // eslint-disable-next-line mocha/no-setup-in-describe
-    [null, undefined, false, '', 0, NaN].forEach((e: unknown) =>
-        it(`should invoke the default 404 handler (${e})`, function () {
+    for (const e of [null, undefined, false, '', 0, NaN]) {
+        await it(`should invoke the default 404 handler (${e})`, async function () {
             const server = buildServer(handlerFactory(e));
-            return request(server)
+            await request(server)
                 .get('/')
                 .expect(404)
                 .expect(/<!DOCTYPE html/u)
                 .expect(/<title>Error<\/title>/u);
-        }),
-    );
+        });
+    }
 
-    it('should handle Error', function () {
+    await it('should handle Error', async function () {
         const expected: ApiErrorResponse = {
             success: false,
             status: 500,
@@ -57,10 +57,10 @@ describe('errorMiddleware', function () {
         };
 
         const server = buildServer(handlerFactory(new Error(expected.message)));
-        return request(server).get('/').expect(expected.status).expect(expected);
+        await request(server).get('/').expect(expected.status).expect(expected);
     });
 
-    it('should handle objects', function () {
+    await it('should handle objects', async function () {
         const expected: ApiErrorResponse = {
             success: false,
             status: 500,
@@ -69,21 +69,18 @@ describe('errorMiddleware', function () {
         };
 
         const server = buildServer(handlerFactory({}));
-        return request(server).get('/').expect(expected.status).expect(expected);
+        await request(server).get('/').expect(expected.status).expect(expected);
     });
 
-    // eslint-disable-next-line mocha/no-setup-in-describe
-    (
-        [
-            ['400', 'CODE', 'MESSAGE', 500, 'CODE', 'MESSAGE'],
-            [400, 'CODE', 'MESSAGE', 400, 'CODE', 'MESSAGE'],
-            [500, undefined, undefined, 500, 'UNKNOWN_ERROR', 'Unknown error'],
-            [undefined, undefined, undefined, 500, 'UNKNOWN_ERROR', 'Unknown error'],
-            [300, undefined, undefined, 300, 'UNKNOWN_ERROR', 'Unknown error'],
-            [600, undefined, undefined, 600, 'UNKNOWN_ERROR', 'Unknown error'],
-        ] as const
-    ).forEach(([status, code, message, expectedStatus, expectedCode, expectedMessage]) =>
-        it(`should handle error-like objects (${status}/${code}/${message} => ${expectedStatus}/${expectedCode})`, function () {
+    for (const [status, code, message, expectedStatus, expectedCode, expectedMessage] of [
+        ['400', 'CODE', 'MESSAGE', 500, 'CODE', 'MESSAGE'],
+        [400, 'CODE', 'MESSAGE', 400, 'CODE', 'MESSAGE'],
+        [500, undefined, undefined, 500, 'UNKNOWN_ERROR', 'Unknown error'],
+        [undefined, undefined, undefined, 500, 'UNKNOWN_ERROR', 'Unknown error'],
+        [300, undefined, undefined, 300, 'UNKNOWN_ERROR', 'Unknown error'],
+        [600, undefined, undefined, 600, 'UNKNOWN_ERROR', 'Unknown error'],
+    ] as const) {
+        await it(`should handle error-like objects (${status}/${code}/${message} => ${expectedStatus}/${expectedCode})`, async function () {
             const expected: ApiErrorResponse = {
                 success: false,
                 status: expectedStatus,
@@ -101,14 +98,14 @@ describe('errorMiddleware', function () {
             }
 
             const server = buildServer(handlerFactory(e));
-            return request(server)
+            await request(server)
                 .get('/')
                 .expect(expected.status >= 400 && expected.status <= 599 ? expected.status : 500)
                 .expect(expected);
-        }),
-    );
+        });
+    }
 
-    it('should handle overriddenError', function () {
+    await it('should handle overriddenError', async function () {
         const expected: ApiErrorResponse = {
             success: false,
             status: 401,
@@ -117,22 +114,19 @@ describe('errorMiddleware', function () {
         };
 
         const server = buildServer(handlerForOverriddenError);
-        return request(server).get('/').expect(expected.status).expect(expected).expect('WWW-Authenticate', 'Bearer');
+        await request(server).get('/').expect(expected.status).expect(expected).expect('WWW-Authenticate', 'Bearer');
     });
 
-    // eslint-disable-next-line mocha/no-setup-in-describe
-    (
-        [
-            [400, 'BAD_REQUEST'],
-            [401, 'UNAUTHORIZED'],
-            [403, 'FORBIDDEN'],
-            [404, 'NOT_FOUND'],
-            [405, 'METHOD_NOT_ALLOWED'],
-            [413, 'REQUEST_TOO_LARGE'],
-            [415, 'UNSUPPORTED_MEDIA_TYPE'],
-        ] as const
-    ).forEach(([status, expectedCode]) =>
-        it(`should handle OpenAPI errors (${status} => ${expectedCode})`, function () {
+    for (const [status, expectedCode] of [
+        [400, 'BAD_REQUEST'],
+        [401, 'UNAUTHORIZED'],
+        [403, 'FORBIDDEN'],
+        [404, 'NOT_FOUND'],
+        [405, 'METHOD_NOT_ALLOWED'],
+        [413, 'REQUEST_TOO_LARGE'],
+        [415, 'UNSUPPORTED_MEDIA_TYPE'],
+    ] as const) {
+        await it(`should handle OpenAPI errors (${status} => ${expectedCode})`, async function () {
             const expected: ApiErrorResponse = {
                 success: false,
                 status,
@@ -151,11 +145,11 @@ describe('errorMiddleware', function () {
                 ),
             );
 
-            return request(server).get('/').expect(expected.status).expect(expected);
-        }),
-    );
+            await request(server).get('/').expect(expected.status).expect(expected);
+        });
+    }
 
-    it('should handle additional headers in OpenAPI errors', function () {
+    await it('should handle additional headers in OpenAPI errors', async function () {
         const server = buildServer(
             handlerFactory(
                 new MethodNotAllowed({
@@ -168,10 +162,10 @@ describe('errorMiddleware', function () {
             ),
         );
 
-        return request(server).get('/').expect(405).expect('Allow', 'TRACE');
+        await request(server).get('/').expect(405).expect('Allow', 'TRACE');
     });
 
-    it('should gracefully handle unknown OpenAPI errors', function () {
+    await it('should gracefully handle unknown OpenAPI errors', async function () {
         const expected: ApiErrorResponse = {
             success: false,
             status: 418,
@@ -184,22 +178,19 @@ describe('errorMiddleware', function () {
             handlerFactory(new InternalServerError({ overrideStatus: expected.status, path: '/' })),
         );
 
-        return request(server).get('/').expect(expected.status).expect(expected);
+        await request(server).get('/').expect(expected.status).expect(expected);
     });
 
-    // eslint-disable-next-line mocha/no-setup-in-describe
-    (
-        [
-            [400, 'BAD_REQUEST', 'Request validation failed'],
-            [401, 'UNAUTHORIZED', 'You are not authorized to perform this request'],
-            [403, 'FORBIDDEN', 'Access denied'],
-            [404, 'NOT_FOUND', 'Not found'],
-            [405, 'METHOD_NOT_ALLOWED', 'Method not allowed'],
-            [413, 'REQUEST_TOO_LARGE', 'Request entity too large'],
-            [415, 'UNSUPPORTED_MEDIA_TYPE', 'Unsupported media type'],
-        ] as const
-    ).forEach(([status, expectedCode, expectedMessage]) =>
-        it(`should handle OpenAPI errors (${status} => ${expectedCode} / ${expectedMessage})`, function () {
+    for (const [status, expectedCode, expectedMessage] of [
+        [400, 'BAD_REQUEST', 'Request validation failed'],
+        [401, 'UNAUTHORIZED', 'You are not authorized to perform this request'],
+        [403, 'FORBIDDEN', 'Access denied'],
+        [404, 'NOT_FOUND', 'Not found'],
+        [405, 'METHOD_NOT_ALLOWED', 'Method not allowed'],
+        [413, 'REQUEST_TOO_LARGE', 'Request entity too large'],
+        [415, 'UNSUPPORTED_MEDIA_TYPE', 'Unsupported media type'],
+    ] as const) {
+        await it(`should handle OpenAPI errors (${status} => ${expectedCode} / ${expectedMessage})`, async function () {
             const expected: ApiErrorResponse = {
                 success: false,
                 status,
@@ -217,24 +208,21 @@ describe('errorMiddleware', function () {
                 ),
             );
 
-            return request(server).get('/').expect(expected.status).expect(expected);
-        }),
-    );
+            await request(server).get('/').expect(expected.status).expect(expected);
+        });
+    }
 
-    // eslint-disable-next-line mocha/no-setup-in-describe
-    (
-        [
-            [400, 'entity.parse.failed', 'BAD_REQUEST', 'Request validation failed'],
-            [400, 'request.aborted', 'BAD_REQUEST', 'Request validation failed'],
-            [400, 'request.size.invalid', 'BAD_REQUEST', 'Request validation failed'],
-            [403, 'entity.verify.failed', 'FORBIDDEN', 'Access denied'],
-            [413, 'entity.too.large', 'REQUEST_TOO_LARGE', 'Request entity too large'],
-            [413, 'parameters.too.many', 'REQUEST_TOO_LARGE', 'Request entity too large'],
-            [415, 'encoding.unsupported', 'UNSUPPORTED_MEDIA_TYPE', 'Unsupported media type'],
-            [415, 'charset.unsupported', 'UNSUPPORTED_MEDIA_TYPE', 'Unsupported media type'],
-        ] as const
-    ).forEach(([status, type, expectedCode, expectedMessage]) =>
-        it(`should handle SyntaxError (${status} => ${expectedCode} / ${expectedMessage})`, function () {
+    for (const [status, type, expectedCode, expectedMessage] of [
+        [400, 'entity.parse.failed', 'BAD_REQUEST', 'Request validation failed'],
+        [400, 'request.aborted', 'BAD_REQUEST', 'Request validation failed'],
+        [400, 'request.size.invalid', 'BAD_REQUEST', 'Request validation failed'],
+        [403, 'entity.verify.failed', 'FORBIDDEN', 'Access denied'],
+        [413, 'entity.too.large', 'REQUEST_TOO_LARGE', 'Request entity too large'],
+        [413, 'parameters.too.many', 'REQUEST_TOO_LARGE', 'Request entity too large'],
+        [415, 'encoding.unsupported', 'UNSUPPORTED_MEDIA_TYPE', 'Unsupported media type'],
+        [415, 'charset.unsupported', 'UNSUPPORTED_MEDIA_TYPE', 'Unsupported media type'],
+    ] as const) {
+        await it(`should handle SyntaxError (${status} => ${expectedCode} / ${expectedMessage})`, async function () {
             const expected: ApiErrorResponse = {
                 success: false,
                 status,
@@ -248,11 +236,11 @@ describe('errorMiddleware', function () {
 
             const server = buildServer(handlerFactory(err));
 
-            return request(server).get('/').expect(expected.status).expect(expected);
-        }),
-    );
+            await request(server).get('/').expect(expected.status).expect(expected);
+        });
+    }
 
-    it('should handle unknown syntax errors', function () {
+    await it('should handle unknown syntax errors', async function () {
         const expected: ApiErrorResponse = {
             success: false,
             status: 500,
@@ -265,12 +253,11 @@ describe('errorMiddleware', function () {
 
         const server = buildServer(handlerFactory(err));
 
-        return request(server).get('/').expect(expected.status).expect(expected);
+        await request(server).get('/').expect(expected.status).expect(expected);
     });
 
-    // eslint-disable-next-line mocha/no-setup-in-describe
-    [502, 503, 504].forEach((status) =>
-        it(`should send 500 for status=${status}`, function () {
+    for (const status of [502, 503, 504]) {
+        await it(`should send 500 for status=${status}`, async function () {
             const expected: ApiErrorResponse = {
                 success: false,
                 status,
@@ -279,11 +266,11 @@ describe('errorMiddleware', function () {
             };
 
             const server = buildServer(handlerFactory(expected));
-            return request(server).get('/').expect(500).expect(expected);
-        }),
-    );
+            await request(server).get('/').expect(500).expect(expected);
+        });
+    }
 
-    it('should allow to intercept the error', function () {
+    await it('should allow to intercept the error', async function () {
         const expected = {
             success: true,
             message: 'Intercepted',
@@ -299,7 +286,7 @@ describe('errorMiddleware', function () {
         server.use(handlerFactory({}));
         server.use(errorMiddleware({ beforeSendHook }));
 
-        return request(server as RequestListener)
+        await request(server as RequestListener)
             .get('/')
             .expect(200)
             .expect(expected);

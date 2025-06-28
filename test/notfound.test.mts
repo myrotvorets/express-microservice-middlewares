@@ -1,3 +1,4 @@
+import { describe, it } from 'node:test';
 import type { RequestListener } from 'node:http';
 import request from 'supertest';
 import express from 'express';
@@ -14,17 +15,17 @@ function buildServer(): RequestListener {
     return server as RequestListener;
 }
 
-describe('notFoundMiddleware', function () {
-    it('should return a proper payload', function () {
+await describe('notFoundMiddleware', async function () {
+    await it('should return a proper payload', async function () {
         const server = buildServer();
-        return request(server)
+        await request(server)
             .get('/')
             .expect(404)
             .expect({ success: false, status: 404, code: 'NOT_FOUND', message: 'Not found' });
     });
 
-    it('should honor request.route', function () {
+    await it('should honor request.route', async function () {
         const server = buildServer();
-        return request(server).get('/test').expect(200).expect({ success: true });
+        await request(server).get('/test').expect(200).expect({ success: true });
     });
 });
