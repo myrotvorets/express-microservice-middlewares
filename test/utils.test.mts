@@ -1,8 +1,9 @@
-import { expect } from 'chai';
+import { deepEqual, equal } from 'node:assert/strict';
+import { describe, it } from 'node:test';
 import { ApiError, badGatewayFromError } from '../lib/index.mjs';
 
-describe('badGatewayFromError', function () {
-    it('should return the expected response', function () {
+await describe('badGatewayFromError', async function () {
+    await it('should return the expected response', function () {
         const expected = {
             status: 502,
             code: 'BAD_GATEWAY',
@@ -11,12 +12,10 @@ describe('badGatewayFromError', function () {
 
         const error = new Error(expected.message);
         const actual = badGatewayFromError(error);
-        expect(actual).to.be.instanceOf(ApiError).that.includes({
-            status: expected.status,
-            code: expected.code,
-            errorMessage: expected.message,
-        });
-
-        expect(actual.cause).to.deep.equal(error);
+        equal(actual instanceof ApiError, true);
+        equal(actual.status, expected.status);
+        equal(actual.code, expected.code);
+        equal(actual.errorMessage, expected.message);
+        deepEqual(actual.cause, error);
     });
 });
