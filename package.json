@@ -9,8 +9,8 @@
     "lint": "eslint -f gha .",
     "lint:fix": "eslint --fix .",
     "prepack": "npm run build",
-    "test": "tsimp --test --test-reporter=spec --test-reporter-destination=stdout --test-reporter=node-reporter-sonarqube --test-reporter-destination=test-report.xml --test-reporter=node-reporter-gha --test-reporter-destination=stdout test/*.test.mts",
-    "test:coverage": "c8 npm test",
+    "test": "tsimp --test --test-reporter=spec --test-reporter-destination=stdout --test-reporter=node-reporter-gha --test-reporter-destination=stdout test/*.test.*",
+    "test:coverage": "c8 tsimp --test --test-reporter=spec --test-reporter-destination=stdout --test-reporter=node-reporter-sonarqube --test-reporter-destination=test-report.xml test/*.test.*",
     "typecheck": "tsc --noEmit"
   },
   "files": [
