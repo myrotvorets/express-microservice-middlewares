@@ -1,5 +1,6 @@
+import { equal } from 'node:assert/strict';
+import { afterEach, beforeEach, describe, it } from 'node:test';
 import type { RequestListener } from 'node:http';
-import { expect } from 'chai';
 import express, { type RequestHandler } from 'express';
 import request from 'supertest';
 import { debugErrorMiddleware } from '../lib/index.mjs';
@@ -17,7 +18,7 @@ const handlerFactory =
     (_req, _res, next): void =>
         next(err);
 
-describe('debugErrorMiddleware', function () {
+await describe('debugErrorMiddleware', async function () {
     let origWarn: typeof console.warn;
     let origError: typeof console.error;
     let calls: number;
@@ -40,10 +41,10 @@ describe('debugErrorMiddleware', function () {
         console.error = origError;
     });
 
-    it('should display a message', function () {
+    await it('should display a message', async function () {
         const server = buildServer(handlerFactory(new Error('Some error')));
-        return request(server)
+        await request(server)
             .get('/')
-            .expect(() => expect(calls).to.equal(1));
+            .expect(() => equal(calls, 1));
     });
 });
