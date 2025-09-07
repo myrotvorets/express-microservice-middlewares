@@ -21,7 +21,7 @@ jobs:
     if: github.event_name == 'release' || github.event.inputs.gpr == 'yes'
     steps:
       - name: Prepare source
-        uses: myrotvorets/composite-actions/node-prepublish@369dc3aeb93e19b315d8a658a6a5d347eac45218 # master
+        uses: myrotvorets/composite-actions/node-prepublish@c18cf44d94c308313f0f78d2dcfc7a92967dff2b # master
 
   publish:
     name: Publish package
@@ -33,7 +33,7 @@ jobs:
       statuses: write
     steps:
       - name: Publish package
-        uses: myrotvorets/composite-actions/node-publish@369dc3aeb93e19b315d8a658a6a5d347eac45218 # master
+        uses: myrotvorets/composite-actions/node-publish@c18cf44d94c308313f0f78d2dcfc7a92967dff2b # master
         with:
           node-auth-token: ${{ github.token }}
           registry-url: https://npm.pkg.github.com
